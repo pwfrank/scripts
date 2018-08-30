@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# backup user scripts
+echo
+echo "Backing up user scripts..."
+rsync -Er --delete ~/scripts ~/storage/Documents/linux_sync
+echo "Done"
+echo
+
+# Backup documents
+echo "Backing up documents..."
+rsync -r --delete ~/Documents ~/storage/Documents/linux_sync
+echo "Done"
+echo
+
+# generate list of all installed packages
+echo "Generating list of installed packages..."
+pacman -Q > ~/storage/Documents/linux_sync/pkglist.txt
+echo "Done"
+echo
+
+while true; do
+	read -p "Do you wish to backup to AWS? (y/n) " yn
+	case $yn in
+		[Yy]* ) aws s3 sync ~/storage/Videos/ s3://x230-232523u-backup/Videos/ --storage-class STANDARD_IA --no-follow-symlinks --delete --exclude "*.ini";
+			aws s3 sync ~/storage/Documents/ s3://x230-232523u-backup/Documents/ --storage-class STANDARD_IA --no-follow-symlinks --delete --exclude "*.ini";
+			aws s3 sync ~/storage/Music/ s3://x230-232523u-backup/Music/ --storage-class STANDARD_IA --no-follow-symlinks --delete --exclude "*.ini";
+			aws s3 sync ~/storage/Pictures/ s3://x230-232523u-backup/Pictures/ --storage-class STANDARD_IA --no-follow-symlinks --delete --exclude "*.ini";
+			break;;
+		[Nn]* ) echo "Exiting without backing up to AWS."; exit;;
+		* ) echo "Please answer yes or no.";;
+	esac
+done
+
+# aws s3 sync ~/storage/Videos/ s3://x230-232523u-backup/Videos/ --storage-class STANDARD_IA --no-follow-symlinks --delete --exclude "*.ini" --dryrun
+# aws s3 sync ~/storage/Documents/ s3://x230-232523u-backup/Documents/ --storage-class STANDARD_IA --no-follow-symlinks --delete --exclude "*.ini" --dryrun
+# aws s3 sync ~/storage/Music/ s3://x230-232523u-backup/Music/ --storage-class STANDARD_IA --no-follow-symlinks --delete --exclude "*.ini" --dryrun
+# aws s3 sync ~/storage/Pictures/ s3://x230-232523u-backup/Pictures/ --storage-class STANDARD_IA --no-follow-symlinks --delete --exclude "*.ini" --dryrun

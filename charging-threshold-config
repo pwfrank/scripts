@@ -1,0 +1,22 @@
+#!/bin/bash
+
+sudo echo "Set charging profile configuration"
+select fliadcr in "Full" "Limited" "Inhibit_Charge" "Allow_Charge" "Force_Discharge" "Stop_Discharge" "Report"; do
+	case $fliadcr in
+		Full ) sudo tpacpi-bat -s SP 1 0; sudo tpacpi-bat -s ST 1 0; break ;;
+		Limited ) sudo tpacpi-bat -s SP 1 80; sudo tpacpi-bat -s ST 1 40; break ;; 
+		Inhibit_Charge ) echo "Set min option: "; read min_option ; sudo tpacpi-bat -s IC 1 1 $min_option; break ;;
+		Allow_Charge ) sudo tpacpi-bat -s IC 1 0; break ;;
+		Force_Discharge ) sudo tpacpi-bat -s FD 1 1; break ;;
+		Stop_Discharge ) sudo tpacpi-bat -s FD 1 0; break ;;
+		Report ) break ;;
+	esac
+done
+echo "----------"
+echo -n "Current Charge:"; sudo tlp-stat -b |grep Charge | sed -n -e 's/^.*=  //p'
+echo -n "Charging Status:"; sudo tlp-stat -b |grep BAT0/status | sed -n -e 's/^.*=//p'
+echo -n "Start Charge Threshold: "; sudo tpacpi-bat -g ST 1
+echo -n "Stop Charge Threshold: "; sudo tpacpi-bat -g SP 1
+echo -n "Inhibit Charge: "; sudo tpacpi-bat -g IC 1
+echo -n "Force Discharge: "; sudo tpacpi-bat -g FD 1
+echo "----------"

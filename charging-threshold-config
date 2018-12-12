@@ -3,8 +3,8 @@ clear
 sudo echo "Set charging profile configuration"
 select var in "Full" "Limited" "Inhibit Charge" "Allow Charge" "Force Discharge" "Stop Discharge" "Report" "Power Cycle"; do
 	case $var in
-		Full ) sudo tlp setcharge 96 100 BAT0 > /dev/null; break ;;
-		Limited ) sudo tlp setcharge 75 80 BAT0 > /dev/null; break ;;
+		"Full" ) sudo tlp setcharge 96 100 BAT0 > /dev/null; break ;;
+		"Limited" ) sudo tlp setcharge 75 80 BAT0 > /dev/null; break ;;
 		"Inhibit Charge" ) echo "Set min option: "; read min_option ; sudo tpacpi-bat -s IC 1 1 $min_option; break ;;
 		"Allow Charge" ) sudo tpacpi-bat -s IC 1 0; break ;;
 		"Force Discharge" ) sudo tpacpi-bat -s FD 1 1; break ;;

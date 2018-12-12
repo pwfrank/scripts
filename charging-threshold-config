@@ -1,22 +1,36 @@
 #!/bin/bash
-
+clear
 sudo echo "Set charging profile configuration"
-select fliadcr in "Full" "Limited" "Inhibit_Charge" "Allow_Charge" "Force_Discharge" "Stop_Discharge" "Report"; do
-	case $fliadcr in
-		Full ) sudo tpacpi-bat -s SP 1 0; sudo tpacpi-bat -s ST 1 0; break ;;
-		Limited ) sudo tpacpi-bat -s SP 1 80; sudo tpacpi-bat -s ST 1 40; break ;; 
-		Inhibit_Charge ) echo "Set min option: "; read min_option ; sudo tpacpi-bat -s IC 1 1 $min_option; break ;;
-		Allow_Charge ) sudo tpacpi-bat -s IC 1 0; break ;;
-		Force_Discharge ) sudo tpacpi-bat -s FD 1 1; break ;;
-		Stop_Discharge ) sudo tpacpi-bat -s FD 1 0; break ;;
+select var in "Full" "Limited" "Inhibit Charge" "Allow Charge" "Force Discharge" "Stop Discharge" "Report" "Power Cycle"; do
+	case $var in
+		Full ) sudo tlp setcharge 96 100 BAT0 > /dev/null; break ;;
+		Limited ) sudo tlp setcharge 75 80 BAT0 > /dev/null; break ;;
+		"Inhibit Charge" ) echo "Set min option: "; read min_option ; sudo tpacpi-bat -s IC 1 1 $min_option; break ;;
+		"Allow Charge" ) sudo tpacpi-bat -s IC 1 0; break ;;
+		"Force Discharge" ) sudo tpacpi-bat -s FD 1 1; break ;;
+		"Stop Discharge" ) sudo tpacpi-bat -s FD 1 0; break ;;
 		Report ) break ;;
+		"Power Cycle" ) echo "Cycling Power..." ; sudo tpacpi-bat -s FD 1 1; 
+			for x in {1..5} 
+			do 
+				echo -n $x
+				sleep 0.5 
+				echo -n "..."
+				sleep 0.5
+			done ; 
+			echo ;
+			sudo tpacpi-bat -s FD 1 0; break ;;
 	esac
 done
 echo "----------"
-echo -n "Current Charge:"; sudo tlp-stat -b |grep Charge | sed -n -e 's/^.*=  //p'
-echo -n "Charging Status:"; sudo tlp-stat -b |grep BAT0/status | sed -n -e 's/^.*=//p'
-echo -n "Start Charge Threshold: "; sudo tpacpi-bat -g ST 1
-echo -n "Stop Charge Threshold: "; sudo tpacpi-bat -g SP 1
-echo -n "Inhibit Charge: "; sudo tpacpi-bat -g IC 1
-echo -n "Force Discharge: "; sudo tpacpi-bat -g FD 1
+sleep 1
+batstat="$(sudo tlp-stat -b)"
+batstat="$(sed 's/Unknown/Not Charging/' <<< $batstat)"
+printf "%-16s %s \n" \
+	'Current Charge:' "$(echo "$batstat" | awk '/^Charge/ {printf "%.1f%%\n", $3}')" \
+       	'Battery Status:' "$(echo "$batstat" | awk '/status/ {printf "%s %s %s %s\n", $3, $4, $5, $6}')" \
+	'Start Threshold:' "$(echo "$batstat" | awk '/start/ {printf "%.0f%%\n", $3}')" \
+	'Stop Threshold:' "$(echo "$batstat" | awk '/stop/ {printf "%.0f%%\n", $3}')" \
+	'Inhibit Charge:' "$(sudo tpacpi-bat -g IC 1)" \
+	'Force Discharge:' "$(sudo tpacpi-bat -g FD 1)"
 echo "----------"

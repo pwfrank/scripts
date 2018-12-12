@@ -28,7 +28,7 @@ batstat="$(sudo tlp-stat -b)"
 batstat="$(sed 's/Unknown/Not Charging/' <<< $batstat)"
 printf "%-16s %s \n" \
 	'Current Charge:' "$(echo "$batstat" | awk '/^Charge/ {printf "%.1f%%\n", $3}')" \
-       	'Battery Status:' "$(echo "$batstat" | awk '/status/ {printf "%s %s %s %s\n", $3, $4, $5, $6}')" \
+	'Battery Status:' "$(echo "$batstat" | awk '/status/ {printf "%s %s %s %s\n", $3, $4, $5, $6}')" \
 	'Start Threshold:' "$(echo "$batstat" | awk '/start/ {printf "%.0f%%\n", $3}')" \
 	'Stop Threshold:' "$(echo "$batstat" | awk '/stop/ {printf "%.0f%%\n", $3}')" \
 	'Inhibit Charge:' "$(sudo tpacpi-bat -g IC 1)" \

@@ -9,7 +9,7 @@ select var in "Full" "Limited" "Inhibit Charge" "Allow Charge" "Force Discharge"
 		"Allow Charge" ) sudo tpacpi-bat -s IC 1 0; break ;;
 		"Force Discharge" ) sudo tpacpi-bat -s FD 1 1; break ;;
 		"Stop Discharge" ) sudo tpacpi-bat -s FD 1 0; break ;;
-		Report ) break ;;
+		"Report" ) break ;;
 		"Power Cycle" ) echo "Cycling Power..." ; sudo tpacpi-bat -s FD 1 1; 
 			for x in {1..5} 
 			do 

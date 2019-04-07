@@ -1,16 +1,20 @@
 #!/bin/bash
+if ((EUID != 0)); then
+  echo >&2 "Error: Missing root privilege"
+  exit 1
+fi
 clear
-sudo echo "Set charging profile configuration"
+echo "Set charging profile configuration"
 select var in "Full" "Limited" "Inhibit Charge" "Allow Charge" "Force Discharge" "Stop Discharge" "Report" "Power Cycle"; do
 	case $var in
-		"Full" ) sudo tlp setcharge 96 100 BAT0 > /dev/null; break ;;
-		"Limited" ) sudo tlp setcharge 75 80 BAT0 > /dev/null; break ;;
-		"Inhibit Charge" ) echo "Set min option: "; read min_option ; sudo tpacpi-bat -s IC 1 1 $min_option; break ;;
-		"Allow Charge" ) sudo tpacpi-bat -s IC 1 0; break ;;
-		"Force Discharge" ) sudo tpacpi-bat -s FD 1 1; break ;;
-		"Stop Discharge" ) sudo tpacpi-bat -s FD 1 0; break ;;
+		"Full" ) tlp setcharge 96 99 BAT0 > /dev/null; break ;;
+		"Limited" ) tlp setcharge 75 80 BAT0 > /dev/null; break ;;
+		"Inhibit Charge" ) echo "Set min option: "; read min_option ; tpacpi-bat -s IC 1 1 $min_option; break ;;
+		"Allow Charge" ) tpacpi-bat -s IC 1 0; break ;;
+		"Force Discharge" ) tpacpi-bat -s FD 1 1; break ;;
+		"Stop Discharge" ) tpacpi-bat -s FD 1 0; break ;;
 		"Report" ) break ;;
-		"Power Cycle" ) echo "Cycling Power..." ; sudo tpacpi-bat -s FD 1 1; 
+		"Power Cycle" ) echo "Cycling Power..." ; tpacpi-bat -s FD 1 1; 
 			for x in {1..5} 
 			do 
 				echo -n $x
@@ -19,18 +23,18 @@ select var in "Full" "Limited" "Inhibit Charge" "Allow Charge" "Force Discharge"
 				sleep 0.5
 			done ; 
 			echo ;
-			sudo tpacpi-bat -s FD 1 0; break ;;
+			tpacpi-bat -s FD 1 0; break ;;
 	esac
 done
 echo "----------"
 sleep 1
-batstat="$(sudo tlp-stat -b)"
+batstat="$(tlp-stat -b)"
 batstat="$(sed 's/Unknown/Not Charging/' <<< $batstat)"
 printf "%-16s %s \n" \
 	'Current Charge:' "$(echo "$batstat" | awk '/^Charge/ {printf "%.1f%%\n", $3}')" \
 	'Battery Status:' "$(echo "$batstat" | awk '/status/ {printf "%s %s %s %s\n", $3, $4, $5, $6}')" \
 	'Start Threshold:' "$(echo "$batstat" | awk '/start/ {printf "%.0f%%\n", $3}')" \
 	'Stop Threshold:' "$(echo "$batstat" | awk '/stop/ {printf "%.0f%%\n", $3}')" \
-	'Inhibit Charge:' "$(sudo tpacpi-bat -g IC 1)" \
-	'Force Discharge:' "$(sudo tpacpi-bat -g FD 1)"
+	'Inhibit Charge:' "$(tpacpi-bat -g IC 1)" \
+	'Force Discharge:' "$(tpacpi-bat -g FD 1)"
 echo "----------"
